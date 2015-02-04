@@ -1,6 +1,7 @@
 // by jeremie miller - 2015
 // public domain, contributions/improvements welcome via github at https://github.com/quartzjer/cb0r
 
+#include <stdint.h>
 #include <string.h> // one strncmp() is used to do key comparison, and a strlen(key) if no len passed in
 
 // gcc started warning for the init syntax used here, is not helpful so don't generate the spam, supressing the warning is really inconsistently supported across versions
@@ -19,7 +20,7 @@
 #define CAP(i) if(depth == 1) { if(val && !index) {*vlen = (cur+i+1) - val; return val;}; if(klen) index = (start && klen == (cur-start) && strncmp(key,start,klen)==0) ? 0 : 1;}
 
 // this makes a single pass across the bytes, using each byte as an index into a jump table to build an index and transition state
-char *cb0r(char *key, size_t klen, uint8_t *cbor, size_t clen, size_t *vlen)
+uint8_t *cb0r(char *key, size_t klen, uint8_t *cbor, size_t clen, size_t *vlen)
 {
 	char *val = 0;
 	char *cur, *end, *start;
