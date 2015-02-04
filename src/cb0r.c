@@ -26,50 +26,62 @@ uint8_t *cb0r(char *key, size_t klen, uint8_t *cbor, size_t clen, size_t *vlen)
   char *cur, *end, *start;
   int index = 1;
   int depth = 0;
+  
+  // http://tools.ietf.org/html/rfc7049#appendix-B
   static void *table[] = 
   {
-    [0 ... 255] = &&l_na,
-    ['\t'] = &&l_loop, [' '] = &&l_loop, ['\r'] = &&l_loop, ['\n'] = &&l_loop,
-    ['"'] = &&l_qup,
-    [':'] = &&l_loop,[','] = &&l_loop,
-    ['['] = &&l_up, [']'] = &&l_down, // tracking [] and {} individually would allow fuller validation but is really messy
-    ['{'] = &&l_up, ['}'] = &&l_down,
-    ['-'] = &&l_bare, [48 ... 57] = &&l_bare, // 0-9
-    [65 ... 90] = &&l_bare, // A-Z
-    [97 ... 122] = &&l_bare // a-z
+    [0x00 ... 0xff] = &&l_bad,
+
+    [0x00 ... 0x17] = &&l_uint,
+    [0x18 ... 0x1b] = &&l_uints,
+
+    [0x20 ... 0x37] = &&l_int,
+    [0x38 ... 0x3b] = &&l_ints,
+
+    [0x40 ... 0x57] = &&l_byte,
+    [0x58 ... 0x5b] = &&l_bytes,
+    [0x5f] = &&l_bytev,
+
+    [0x60 ... 0x77] = &&l_utf8,
+    [0x78 ... 0x7b] = &&l_utf8s,
+    [0x7f] = &&l_utf8v,
+
+    [0x80 ... 0x97] = &&l_array,
+    [0x98 ... 0x9b] = &&l_arrays,
+    [0x9f] = &&l_arrayv,
+
+    [0xa0 ... 0xb7] = &&l_map,
+    [0xb8 ... 0xbb] = &&l_maps,
+    [0xbf] = &&l_mapv,
+
+    [0xc0] = &&l_time,
+    [0xc1] = &&l_epoch,
+
+    [0xc2] = &&l_bigp,
+    [0xc3] = &&l_bign,
+    [0xc4] = &&l_bigd,
+    [0xc5] = &&l_bigf,
+
+    [0xc6 ... 0xd4] = &&l_tag,
+    [0xd5 ... 0xd7] = &&l_tagx,
+    [0xd8 ... 0xdb] = &&l_tagv,
+    
+    [0xe0 ... 0xf3] = &&l_v,
+    [0xf4] = &&l_vfalse,
+    [0xf5] = &&l_vtrue,
+    [0xf6] = &&l_vnull,
+    [0xf7] = &&l_vundef,
+    [0xf8] = &&l_vone,
+
+    [0xf9] = &&l_f2,
+    [0xfa] = &&l_f4,
+    [0xfb] = &&l_f8,
+
+    [0xff] = &&l_stop,
+    
   };
-  static void *gobare[] = 
-  {
-    [0 ... 31] = &&l_bad,
-    [32 ... 126] = &&l_loop, // could be more pedantic/validation-checking
-    ['\t'] = &&l_unbare, [' '] = &&l_unbare, ['\r'] = &&l_unbare, ['\n'] = &&l_unbare,
-    [','] = &&l_unbare, [']'] = &&l_unbare, ['}'] = &&l_unbare,
-    [127 ... 255] = &&l_bad
-  };
-  static void *gostring[] = 
-  {
-    [0 ... 31] = &&l_bad, [127] = &&l_bad,
-    [32 ... 126] = &&l_loop,
-    ['\\'] = &&l_esc, ['"'] = &&l_qdown,
-    [128 ... 191] = &&l_bad,
-    [192 ... 223] = &&l_utf8_2,
-    [224 ... 239] = &&l_utf8_3,
-    [240 ... 247] = &&l_utf8_4,
-    [248 ... 255] = &&l_bad
-  };
-  static void *goutf8_continue[] =
-  {
-    [0 ... 127] = &&l_bad,
-    [128 ... 191] = &&l_utf_continue,
-    [192 ... 255] = &&l_bad
-  };
-  static void *goesc[] = 
-  {
-    [0 ... 255] = &&l_bad,
-    ['"'] = &&l_unesc, ['\\'] = &&l_unesc, ['/'] = &&l_unesc, ['b'] = &&l_unesc,
-    ['f'] = &&l_unesc, ['n'] = &&l_unesc, ['r'] = &&l_unesc, ['t'] = &&l_unesc, ['u'] = &&l_unesc
-  };
-  void **go = gostruct;
+
+  void **go = table;
   
   if(!json || jlen <= 0 || !vlen) return 0;
   *vlen = 0;
