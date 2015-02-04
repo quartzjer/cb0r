@@ -1,5 +1,5 @@
-// by jeremie miller - 2014
-// public domain, contributions/improvements welcome via github at https://github.com/quartzjer/js0n
+// by jeremie miller - 2015
+// public domain, contributions/improvements welcome via github at https://github.com/quartzjer/cb0r
 
 #include <string.h> // one strncmp() is used to do key comparison, and a strlen(key) if no len passed in
 
@@ -18,8 +18,8 @@
 // determine if key matches or value is complete
 #define CAP(i) if(depth == 1) { if(val && !index) {*vlen = (cur+i+1) - val; return val;}; if(klen) index = (start && klen == (cur-start) && strncmp(key,start,klen)==0) ? 0 : 1;}
 
-// this makes a single pass across the json bytes, using each byte as an index into a jump table to build an index and transition state
-char *js0n(char *key, int klen, char *json, int jlen, int *vlen)
+// this makes a single pass across the bytes, using each byte as an index into a jump table to build an index and transition state
+char *cb0r(char *key, size_t klen, uint8_t *cbor, size_t clen, size_t *vlen)
 {
 	char *val = 0;
 	char *cur, *end, *start;
