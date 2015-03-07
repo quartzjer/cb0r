@@ -1,6 +1,6 @@
 # cb0r - Minimal Zero-Footprint [CBOR](http://cbor.io) Decoder in C
 
-> note - this code is not functioning yet
+> NOTE - this code is not functioning yet, consider using [cn-cbor](https://github.com/cabo/cn-cbor) until I find more time/demand to get this working
 
 A one-pass minimal overhead walk of the raw bytes, using each one as an index into a jump table to determine state transitions.
 
@@ -10,7 +10,7 @@ A one-pass minimal overhead walk of the raw bytes, using each one as an index in
 * requires no memory/malloc or copying, uses only what is passed in
 * safely stops on anything bad
 
-For other CBOR implementations check [http://cbor.io/impls.html](http://cbor.io/impls.html), and in C there is one from [RIOT-OS](https://github.com/RIOT-OS/RIOT/tree/master/sys/cbor) and [upwhere](https://github.com/upwhere/ccbor).
+For other CBOR implementations check [http://cbor.io/impls.html](http://cbor.io/impls.html).
 
 ## Usage
 
