@@ -2,3 +2,4 @@
 // public domain UNLICENSE, contributions/improvements welcome via github at https://github.com/quartzjer/cb0r
 
 bool vtest = true;
+

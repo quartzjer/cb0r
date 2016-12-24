@@ -6,7 +6,7 @@
 int main(int argc, char **argv)
 {
   #include "cb0r_zen.c"
-  fail_unless(ztest);
+  fail_unless(b0go);
 
   #include "cb0r_next.c"
   fail_unless(ntest);
