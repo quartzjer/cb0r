@@ -1,22 +1,22 @@
 
-all: test example
+all: test 
 
-test.c: test/test.c src/cb0r.c
-	gcc -Wall -o test/test test/test.c src/cb0r.c
+test.c: test/test.c 
+	gcc -Wall -Isrc -o bin/test test/test.c 
 
 test: test.c
-	@if ./test/test ; then \
-		rm -f ./test/test; \
+	@if ./bin/test ; then \
+		rm -f ./bin/test; \
 		echo "TESTS PASSED"; \
 	else \
-		rm -f ./test/test; \
+		rm -f ./bin/test; \
 		echo "TESTS FAILED"; exit 1; \
 	fi; \
 
-example: test/example.c src/cb0r.c
-	gcc -Wall -o example test/example.c src/cb0r.c
+example: bin/example.c 
+	gcc -Wall -Isrc -o bin/example bin/example.c 
 
 clean:
-	rm -f example test/test
+	rm -f bin/example bin/test
 
 .PHONY: all test clean
