@@ -6,10 +6,8 @@ test.c: test/test.c
 
 test: test.c
 	@if ./bin/test ; then \
-		rm -f ./bin/test; \
 		echo "TESTS PASSED"; \
 	else \
-		rm -f ./bin/test; \
 		echo "TESTS FAILED"; exit 1; \
 	fi; \
 

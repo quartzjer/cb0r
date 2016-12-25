@@ -1,7 +1,7 @@
 // by jeremie miller - 2015,2016
 // public domain UNLICENSE, contributions/improvements welcome via github at https://github.com/quartzjer/cb0r
 
-static const void *b0go[] RODATA_SEGMENT_CONSTANT = 
+static const void *b0_go[] RODATA_SEGMENT_CONSTANT = 
 {
   [0x00 ... 0xff] = &&l_bad,
   [0x00 ... 0x17] = &&l_uintv,
