@@ -33,9 +33,6 @@ typedef enum {
   CB0R_END
 } cb0r_t;
 
-// #define CB0R_CODE // table and labels
-// #define CB0R_NEXT // sets type, start*, end*
-// #define CB0R_VALUE() // uses type/start/end, fills in given value
 
 // Jump Table from https://tools.ietf.org/html/rfc7049#appendix-B
 /****************************************************************
