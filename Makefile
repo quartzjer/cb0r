@@ -2,7 +2,7 @@
 all: test 
 
 test.c: test/test.c 
-	gcc -Wall -Isrc -o bin/test test/test.c 
+	gcc -Wall -Isrc -o bin/test test/test.c src/cb0r.c
 
 test: test.c
 	@if ./bin/test ; then \

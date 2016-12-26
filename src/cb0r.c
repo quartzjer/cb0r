@@ -1,67 +1,121 @@
-// by jeremie miller - 2015
-// public domain, contributions/improvements welcome via github at https://github.com/quartzjer/cb0r
+// by jeremie miller - 2015,2016
+// public domain UNLICENSE, contributions/improvements welcome via github at https://github.com/quartzjer/cb0r
 
 #include "cb0r.h"
 
-size_t cb0r(uint8_t *raw, size_t len, uint8_t *type, uint64_t *val, size_t *start)
+// start at bin, returns end pointer (== stop if complete), either performs count items or extracts result of current item
+uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 {
-  uint64_t v = 0;
-  size_t data = 0;
-  size_t next = 0;
+  static const void *go[] RODATA_SEGMENT_CONSTANT = 
+  {
+    [0x00 ... 0xff] = &&l_bad,
+    [0x00 ... 0x17] = &&l_intv,
+    [0x18 ... 0x1b] = &&l_int,
+    [0x20 ... 0x37] = &&l_intnv,
+    [0x38 ... 0x3b] = &&l_intn,
+    [0x40 ... 0x57] = &&l_bytev,
+    [0x58 ... 0x5f] = &&l_byte,
+    [0x60 ... 0x77] = &&l_utf8v,
+    [0x78 ... 0x7f] = &&l_utf8,
+    [0x80 ... 0x97] = &&l_arrayv,
+    [0x98 ... 0x9f] = &&l_array,
+    [0xa0 ... 0xb7] = &&l_mapv,
+    [0xb8 ... 0xbf] = &&l_map,
+    [0xc0] = &&l_datet,
+    [0xc1] = &&l_datee,
+    [0xc2] = &&l_ubig,
+    [0xc3] = &&l_nbig,
+    [0xc4] = &&l_fraction,
+    [0xc5] = &&l_fbig,
+    [0xc6 ... 0xd4] = &&l_tagv,
+    [0xd5 ... 0xd7] = &&l_convert,
+    [0xd8 ... 0xdb] = &&l_tag,
+    [0xe0 ... 0xf3] = &&l_simplev,
+    [0xf4] = &&l_false,
+    [0xf5] = &&l_true,
+    [0xf6] = &&l_null,
+    [0xf7] = &&l_undefined,
+    [0xf8] = &&l_simple,
+    [0xf9 ... 0xfb] = &&l_float,
+    [0xff] = &&l_break
+  };
 
-  if(!raw || !len || !type) return 0;
-  *type = CB0R_ERR;
+  if(start >= stop) return stop;
 
-  // TODO!
-  /* from the spec http://tools.ietf.org/html/rfc7049#appendix-C
-  well_formed (breakable = false) {
-     // process initial bytes
-     ib = uint(take(1));
-     mt = ib >> 5;
-     val = ai = ib & 0x1f;
-     switch (ai) {
-       case 24: val = uint(take(1)); break;
-       case 25: val = uint(take(2)); break;
-       case 26: val = uint(take(4)); break;
-       case 27: val = uint(take(8)); break;
-       case 28: case 29: case 30: fail();
-       case 31:
-         return well_formed_indefinite(mt, breakable);
-     }
-     // process content
-     switch (mt) {
-       // case 0, 1, 7 do not have content; just use val
-       case 2: case 3: take(val); break; // bytes/UTF-8
-       case 4: for (i = 0; i < val; i++) well_formed(); break;
-       case 5: for (i = 0; i < val*2; i++) well_formed(); break;
-       case 6: well_formed(); break;     // 1 embedded data item
-     }
-     return mt;                    // finite data item
-   }
+  uint8_t *end = NULL;
+  cb0r_e type = CB0R_ERR;
 
-   well_formed_indefinite(mt, breakable) {
-     switch (mt) {
-       case 2: case 3:
-         while ((it = well_formed(true)) != -1)
-           if (it != mt)           // need finite embedded
-             fail();               //    of same type
-         break;
-       case 4: while (well_formed(true) != -1); break;
-       case 5: while (well_formed(true) != -1) well_formed(); break;
-       case 7:
-         if (breakable)
-           return -1;              // signal break out
-         else fail();              // no enclosing indefinite
-       default: fail();            // wrong mt
-     }
-     return 0;                     // no break out
-   }
-  */
+  uint8_t byte = *start;
+  goto *go[byte];
 
-  // if given a place to copy results, return them
-  if(val) *val = v;
-  if(start) *start = data;
+  l_intv: {
+    type = CB0R_INT;
+    if(result) result->value = byte & 0x1f;
+    end = start+1;
+    goto l_done;
+  }
+  l_int:
+  l_intnv:
+  l_intn:
+  l_bytev:
+  l_byte:
+  l_utf8v:
+  l_utf8:
+  l_arrayv:
+  l_array:
+  l_mapv:
+  l_map:
+  l_datet:
+  l_datee:
+  l_ubig:
+  l_nbig:
+  l_fraction:
+  l_fbig:
+  l_tagv:
+  l_convert:
+  l_tag:
+  l_simplev:
+  l_false:
+  l_true:
+  l_null:
+  l_undefined:
+  l_simple:
+  l_float:
 
-  // where's the next value
-  return next;
+  l_break: {
+    if(skip != UINT32_MAX) goto l_err;
+    skip = 0;
+    goto l_done;
+  }
+
+  l_bad: {
+    type = CB0R_EBAD;
+    skip = 0;
+    goto l_done;
+  }
+
+  l_err: {
+    type = CB0R_EPARSE;
+    skip = 0;
+    goto l_done;
+  }
+
+  l_done:
+
+  // done done
+  if(!skip)
+  {
+    if(result)
+    {
+      result->type = type;
+      result->start = start;
+    }
+    return end;
+  }
+
+  // max means streaming mode skip
+  if(skip != UINT32_MAX) skip--;
+
+  // tail recurse while skipping
+  return cb0r(end, stop, skip - 1, result);
 }

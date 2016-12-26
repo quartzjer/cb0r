@@ -15,24 +15,38 @@
 #define RODATA_SEGMENT_CONSTANT
 #endif
 
-// these are the possible types
 typedef enum {
-  CB0R_ERR = 0,
-  CB0R_INT  , // (int64_t)val
-  CB0R_UINT , // val
-  CB0R_BYTE , // start+val
-  CB0R_TEXT , // start+val
-  CB0R_ARRAY, // val is items, start == first
-  CB0R_MAP  , // val is pairs, start == first
-  CB0R_TAG  , // val
-  CB0R_FLOAT, // (double)val
-  CB0R_TRUE , // n/a
-  CB0R_FALSE, // n/a
-  CB0R_NULL , // n/a
-  CB0R_UNDEF, // n/a
-  CB0R_END
-} cb0r_t;
+  CB0R_INT = 0, // positive integer in value
+  CB0R_INTN   , // negative integer in value (-1 - value)
+  CB0R_BYTE   , // start+length
+  CB0R_TEXT   , // start+length
+  CB0R_ARRAY  , // start+count
+  CB0R_MAP    , // start+count (count*2 items)
+  CB0R_TAG    , // 
+  CB0R_FLOAT  , // fvalue
+  CB0R_TRUE   , // 
+  CB0R_FALSE  , // 
+  CB0R_NULL   , // 
+  CB0R_UNDEF  , // 
+  CB0R_ERR    , // if(type >= CB0R_ERR) 
+  CB0R_EPARSE , // invalid structure 
+  CB0R_EBAD     // invalid type byte
+} cb0r_e;
 
+typedef struct cb0r_s
+{
+  cb0r_e type;
+  uint8_t *start;
+  union {
+    uint32_t length;
+    uint32_t count;
+    uint32_t value;
+    float fvalue;
+  };
+} cb0r_s, *cb0r_t;
+
+// start at bin, returns end pointer (== stop if complete), either performs count items or extracts result of current item
+uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result);
 
 // Jump Table from https://tools.ietf.org/html/rfc7049#appendix-B
 /****************************************************************
