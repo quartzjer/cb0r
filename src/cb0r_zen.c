@@ -36,7 +36,11 @@ static const void *b0_go[] RODATA_SEGMENT_CONSTANT =
 };
 
 l_bad:
-l_uintv:
+l_uintv: {
+  b0_count = 1;
+  b0_type = CB0R_INT;
+  goto l_next;
+}
 l_uint:
 l_nintv:
 l_nint:
