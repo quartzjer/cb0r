@@ -17,7 +17,7 @@
 
 typedef enum {
   CB0R_INT = 0, // positive integer in value
-  CB0R_INTN   , // negative integer in value (-1 - value)
+  CB0R_NEG    , // negative integer in value (-1 - value)
   CB0R_BYTE   , // start+length
   CB0R_TEXT   , // start+length
   CB0R_ARRAY  , // start+count
@@ -38,11 +38,10 @@ typedef struct cb0r_s
 {
   cb0r_e type;
   uint8_t *start;
-  union {
+  union { // different names/aliases for context readability
     uint32_t length;
     uint32_t count;
     uint32_t value;
-    float fvalue;
   };
 } cb0r_s, *cb0r_t;
 

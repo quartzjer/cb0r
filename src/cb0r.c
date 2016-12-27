@@ -44,25 +44,21 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
   if(start >= stop) return stop;
 
-  uint8_t *end = NULL;
+  uint8_t *end = start+1;
   cb0r_e type = CB0R_ERR;
-  uint8_t byte = *start;
-  uint8_t bytes = 0;
 
-  goto *go[byte];
+  goto *go[start[0]];
 
   l_int8:
-    bytes += 4;
+    end += 4;
   l_int4:
-    bytes += 2;
+    end += 2;
   l_int2:
-    bytes += 1;
+    end += 1;
   l_int1:
-    bytes += 1;
+    end += 1;
   l_int: 
     type = CB0R_INT;
-    start++;
-    end = start+bytes;
     goto l_done;
 
   l_intnv:
@@ -118,28 +114,53 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     skip = 0;
   }
 
-  // done done
+  // done done, extract value if result requested
   if(!skip)
   {
-    if(result)
+    if(!result) return end;
+    result->type = type;
+    switch(type)
     {
-      result->type = type;
-      result->start = start;
-      result->value = 0;
-      switch(bytes)
-      {
-        case 8:
-        case 4:
-          result->value |= (uint32_t)(start[bytes - 4]) << 24;
-          result->value |= (uint32_t)(start[bytes - 3]) << 16;
+      case CB0R_INT:
+      case CB0R_NEG: {
+        result->start = start+1;
+        result->value = 0;
+        uint8_t size = end - result->start;
+        switch(size)
+        {
+          case 8:
+          case 4:
+            result->value |= (uint32_t)(start[size - 3]) << 24;
+            result->value |= (uint32_t)(start[size - 2]) << 16;
+          case 2:
+            result->value |= (uint32_t)(start[size - 1]) << 8;
+          case 1:
+            result->value |= start[size];
+            break;
+          case 0:
+            result->value = start[size] & 0x1f;
+        }
+      } break;
+      case CB0R_BYTE: {
 
-        case 2:
-          result->value |= (uint32_t)(start[bytes - 2]) << 8;
-        case 1:
-          result->value |= start[bytes - 1];
-          break;
-        case 0:
-          result->value = byte & 0x1f;
+      } break;
+      case CB0R_TEXT: {
+
+      } break;
+      case CB0R_ARRAY: {
+
+      } break;
+      case CB0R_MAP: {
+
+      } break;
+      case CB0R_TAG: {
+
+      } break;
+      case CB0R_FLOAT: {
+
+      } break;
+      default: {
+
       }
     }
     return end;
