@@ -17,14 +17,16 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     [0x38] = &&l_int1, [0x39] = &&l_int2,[0x3a] = &&l_int4, [0x3b] = &&l_int8,
     [0x40 ... 0x57] = &&l_byte,
     [0x58] = &&l_byte1, [0x59] = &&l_byte2,[0x5a] = &&l_byte4, [0x5b] = &&l_ebig,
-    [0x5f] = &&l_bytef,
+    [0x5f] = &&l_until,
     [0x60 ... 0x77] = &&l_byte,
     [0x78] = &&l_byte1, [0x79] = &&l_byte2,[0x7a] = &&l_byte4, [0x7b] = &&l_ebig,
-    [0x7f] = &&l_bytef,
-    [0x80 ... 0x97] = &&l_arrayv,
-    [0x98 ... 0x9f] = &&l_array,
-    [0xa0 ... 0xb7] = &&l_mapv,
-    [0xb8 ... 0xbf] = &&l_map,
+    [0x7f] = &&l_until,
+    [0x80 ... 0x97] = &&l_array,
+    [0x98] = &&l_array1, [0x99] = &&l_array2,[0x9a] = &&l_array4, [0x9b] = &&l_ebig,
+    [0x9f] = &&l_until,
+    [0xa0 ... 0xb7] = &&l_array,
+    [0xb8] = &&l_array1, [0xb9] = &&l_array2,[0xba] = &&l_array4, [0xbb] = &&l_ebig,
+    [0xbf] = &&l_until,
     [0xc0] = &&l_datet,
     [0xc1] = &&l_datee,
     [0xc2] = &&l_ubig,
@@ -46,9 +48,10 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
   if(start >= stop) return stop;
 
-  uint8_t *end = start+1;
+  uint8_t *end = start + 1;
   cb0r_e type = CB0R_ERR;
-  uint32_t size = 0;
+  uint8_t size = 0;
+  uint32_t count = 0;
 
   goto *go[*start];
 
@@ -76,17 +79,42 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     goto l_finish;
 
   l_byte: 
-    end += start[0] & 0x1f;
+    end += (start[0] & 0x1f);
     goto l_finish;
 
-  l_bytef:
+  l_array4:
+    size = 2;
+    count += (uint32_t)(start[1]) << 24;
+    count += (uint32_t)(start[2]) << 16;
+  l_array2:
+    size += 1;
+    count += (uint32_t)(start[size]) << 8;
+  l_array1:
+    size += 1;
+    count += start[size];
+    goto l_skip;
+
+  l_array: 
+    count = (start[0] & 0x1f);
+    goto l_skip;
+
+  // skip fixed count items (stored as diff between end and start)
+  l_skip: {
+    if(count)
+    {
+      // map is double array
+      if(start[0] & 0x20) end = cb0r(start+size+1,stop,(count*2)-1,NULL);
+      else end = cb0r(start+size+1,stop,count-1,NULL);
+    }else{
+      end += size;
+    }
+    goto l_finish;
+  }
+
+  l_until: // indefinite length wrapper
     end = cb0r(start+1,stop,UINT32_MAX,NULL);
     goto l_finish;
 
-  l_arrayv:
-  l_array:
-  l_mapv:
-  l_map:
   l_datet:
   l_datee:
   l_ubig:
@@ -165,11 +193,10 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
         result->length = end - (result->start + size);
       } break;
 
-      case CB0R_ARRAY: {
-
-      } break;
+      case CB0R_ARRAY:
       case CB0R_MAP: {
-
+        result->start += size;
+        result->count = count;
       } break;
       case CB0R_TAG: {
 

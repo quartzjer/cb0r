@@ -113,6 +113,36 @@ int main(int argc, char **argv)
   fail_unless(res->type == CB0R_UTF8);
   fail_unless(memcmp(res->start,"a",res->length) == 0);
 
+  len = unhex("80",start);
+  end = cb0r(start, start+len, 0, res);
+  fail_unless(end == start+len);
+  fail_unless(res->type == CB0R_ARRAY);
+  fail_unless(res->count == 0);
+
+  len = unhex("8100",start);
+  end = cb0r(start, start+len, 0, res);
+  fail_unless(end == start+len);
+  fail_unless(res->type == CB0R_ARRAY);
+  fail_unless(res->count == 1);
+
+  len = unhex("820102",start);
+  end = cb0r(start, start+len, 0, res);
+  fail_unless(end == start+len);
+  fail_unless(res->type == CB0R_ARRAY);
+  fail_unless(res->count == 2);
+
+  len = unhex("818100",start);
+  end = cb0r(start, start+len, 0, res);
+  fail_unless(end == start+len);
+  fail_unless(res->type == CB0R_ARRAY);
+  fail_unless(res->count == 1);
+
+  len = unhex("a1616100",start);
+  end = cb0r(start, start+len, 0, res);
+  fail_unless(end == start+len);
+  fail_unless(res->type == CB0R_MAP);
+  fail_unless(res->count == 1);
+
   return 0;
 }
 
