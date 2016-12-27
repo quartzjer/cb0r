@@ -3,14 +3,16 @@
 
 #include "cb0r.h"
 
+#include <stdio.h>
+
 // start at bin, returns end pointer (== stop if complete), either performs count items or extracts result of current item
 uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 {
   static const void *go[] RODATA_SEGMENT_CONSTANT = 
   {
     [0x00 ... 0xff] = &&l_bad,
-    [0x00 ... 0x17] = &&l_intv,
-    [0x18 ... 0x1b] = &&l_int,
+    [0x00 ... 0x17] = &&l_int,
+    [0x18] = &&l_int1, [0x19] = &&l_int2,[0x1a] = &&l_int4, [0x1b] = &&l_int8,
     [0x20 ... 0x37] = &&l_intnv,
     [0x38 ... 0x3b] = &&l_intn,
     [0x40 ... 0x57] = &&l_bytev,
@@ -44,17 +46,25 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
   uint8_t *end = NULL;
   cb0r_e type = CB0R_ERR;
-
   uint8_t byte = *start;
+  uint8_t bytes = 0;
+
   goto *go[byte];
 
-  l_intv: {
+  l_int8:
+    bytes += 4;
+  l_int4:
+    bytes += 2;
+  l_int2:
+    bytes += 1;
+  l_int1:
+    bytes += 1;
+  l_int: 
     type = CB0R_INT;
-    if(result) result->value = byte & 0x1f;
-    end = start+1;
+    start++;
+    end = start+bytes;
     goto l_done;
-  }
-  l_int:
+
   l_intnv:
   l_intn:
   l_bytev:
@@ -102,6 +112,12 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
   l_done:
 
+  if(end > stop)
+  {
+    type = CB0R_EMORE;
+    skip = 0;
+  }
+
   // done done
   if(!skip)
   {
@@ -109,6 +125,22 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     {
       result->type = type;
       result->start = start;
+      result->value = 0;
+      switch(bytes)
+      {
+        case 8:
+        case 4:
+          result->value |= (uint32_t)(start[bytes - 4]) << 24;
+          result->value |= (uint32_t)(start[bytes - 3]) << 16;
+
+        case 2:
+          result->value |= (uint32_t)(start[bytes - 2]) << 8;
+        case 1:
+          result->value |= start[bytes - 1];
+          break;
+        case 0:
+          result->value = byte & 0x1f;
+      }
     }
     return end;
   }

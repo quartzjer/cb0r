@@ -30,7 +30,8 @@ typedef enum {
   CB0R_UNDEF  , // 
   CB0R_ERR    , // if(type >= CB0R_ERR) 
   CB0R_EPARSE , // invalid structure 
-  CB0R_EBAD     // invalid type byte
+  CB0R_EBAD   , // invalid type byte
+  CB0R_EMORE    // more data needed
 } cb0r_e;
 
 typedef struct cb0r_s
