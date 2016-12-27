@@ -143,6 +143,19 @@ int main(int argc, char **argv)
   fail_unless(res->type == CB0R_MAP);
   fail_unless(res->count == 1);
 
+  len = unhex("0117",start);
+  end = cb0r(start, start+len, 0, NULL);
+  end = cb0r(end, start+len, 0, res);
+  fail_unless(end == start+len);
+  fail_unless(res->type == CB0R_INT);
+  fail_unless(res->value == 23);
+
+  len = unhex("0117",start);
+  end = cb0r(start, start+len, 1, res);
+  fail_unless(end == start+len);
+  fail_unless(res->type == CB0R_INT);
+  fail_unless(res->value == 23);
+
   return 0;
 }
 

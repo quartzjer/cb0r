@@ -215,5 +215,5 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   if(skip != UINT32_MAX) skip--;
 
   // tail recurse while skipping
-  return cb0r(end, stop, skip - 1, result);
+  return cb0r(end, stop, skip, result);
 }
