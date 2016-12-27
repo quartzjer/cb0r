@@ -10,15 +10,17 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 {
   static const void *go[] RODATA_SEGMENT_CONSTANT = 
   {
-    [0x00 ... 0xff] = &&l_bad,
+    [0x00 ... 0xff] = &&l_ebad,
     [0x00 ... 0x17] = &&l_int,
     [0x18] = &&l_int1, [0x19] = &&l_int2,[0x1a] = &&l_int4, [0x1b] = &&l_int8,
-    [0x20 ... 0x37] = &&l_intnv,
-    [0x38 ... 0x3b] = &&l_intn,
-    [0x40 ... 0x57] = &&l_bytev,
-    [0x58 ... 0x5f] = &&l_byte,
-    [0x60 ... 0x77] = &&l_utf8v,
-    [0x78 ... 0x7f] = &&l_utf8,
+    [0x20 ... 0x37] = &&l_int,
+    [0x38] = &&l_int1, [0x39] = &&l_int2,[0x3a] = &&l_int4, [0x3b] = &&l_int8,
+    [0x40 ... 0x57] = &&l_byte,
+    [0x58] = &&l_byte1, [0x59] = &&l_byte2,[0x5a] = &&l_byte4, [0x5b] = &&l_ebig,
+    [0x5f] = &&l_bytef,
+    [0x60 ... 0x77] = &&l_byte,
+    [0x78] = &&l_byte1, [0x79] = &&l_byte2,[0x7a] = &&l_byte4, [0x7b] = &&l_ebig,
+    [0x7f] = &&l_bytef,
     [0x80 ... 0x97] = &&l_arrayv,
     [0x98 ... 0x9f] = &&l_array,
     [0xa0 ... 0xb7] = &&l_mapv,
@@ -46,8 +48,9 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
   uint8_t *end = start+1;
   cb0r_e type = CB0R_ERR;
+  uint32_t size = 0;
 
-  goto *go[start[0]];
+  goto *go[*start];
 
   l_int8:
     end += 4;
@@ -58,15 +61,28 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   l_int1:
     end += 1;
   l_int: 
-    type = CB0R_INT;
-    goto l_done;
+    goto l_finish;
 
-  l_intnv:
-  l_intn:
-  l_bytev:
-  l_byte:
-  l_utf8v:
-  l_utf8:
+  l_byte4:
+    size = 2;
+    end += (uint32_t)(start[1]) << 24;
+    end += (uint32_t)(start[2]) << 16;
+  l_byte2:
+    size += 1;
+    end += (uint32_t)(start[size]) << 8;
+  l_byte1:
+    size += 1;
+    end += start[size] + size;
+    goto l_finish;
+
+  l_byte: 
+    end += start[0] & 0x1f;
+    goto l_finish;
+
+  l_bytef:
+    end = cb0r(start+1,stop,UINT32_MAX,NULL);
+    goto l_finish;
+
   l_arrayv:
   l_array:
   l_mapv:
@@ -89,46 +105,47 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   l_float:
 
   l_break: {
-    if(skip != UINT32_MAX) goto l_err;
+    if(skip != UINT32_MAX) goto l_eparse;
     skip = 0;
     goto l_done;
   }
 
-  l_bad: {
+  l_ebad:
     type = CB0R_EBAD;
-    skip = 0;
-    goto l_done;
-  }
+    goto l_fail;
 
-  l_err: {
+  l_eparse:
     type = CB0R_EPARSE;
+    goto l_fail;
+
+  l_ebig:
+    type = CB0R_EBIG;
+    goto l_fail;
+
+  l_fail: // all errors
     skip = 0;
-    goto l_done;
-  }
+
+  l_finish: // only first 7 types
+    type = (start[0] >> 5);
 
   l_done:
-
-  if(end > stop)
-  {
-    type = CB0R_EMORE;
-    skip = 0;
-  }
 
   // done done, extract value if result requested
   if(!skip)
   {
     if(!result) return end;
+    result->start = start+1;
     result->type = type;
+    result->value = 0;
     switch(type)
     {
       case CB0R_INT:
       case CB0R_NEG: {
-        result->start = start+1;
-        result->value = 0;
-        uint8_t size = end - result->start;
+        size = end - result->start;
         switch(size)
         {
           case 8:
+            // implementations can use start[8] to get 64 bit number
           case 4:
             result->value |= (uint32_t)(start[size - 3]) << 24;
             result->value |= (uint32_t)(start[size - 2]) << 16;
@@ -141,12 +158,13 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
             result->value = start[size] & 0x1f;
         }
       } break;
-      case CB0R_BYTE: {
 
+      case CB0R_BYTE:
+      case CB0R_UTF8: {
+        result->start += size;
+        result->length = end - (result->start + size);
       } break;
-      case CB0R_TEXT: {
 
-      } break;
       case CB0R_ARRAY: {
 
       } break;

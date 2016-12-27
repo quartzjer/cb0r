@@ -19,7 +19,7 @@ typedef enum {
   CB0R_INT = 0, // positive integer in value
   CB0R_NEG    , // negative integer in value (-1 - value)
   CB0R_BYTE   , // start+length
-  CB0R_TEXT   , // start+length
+  CB0R_UTF8   , // start+length
   CB0R_ARRAY  , // start+count
   CB0R_MAP    , // start+count (count*2 items)
   CB0R_TAG    , // 
@@ -31,7 +31,7 @@ typedef enum {
   CB0R_ERR    , // if(type >= CB0R_ERR) 
   CB0R_EPARSE , // invalid structure 
   CB0R_EBAD   , // invalid type byte
-  CB0R_EMORE    // more data needed
+  CB0R_EBIG     // unsupported size item
 } cb0r_e;
 
 typedef struct cb0r_s
