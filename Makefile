@@ -1,5 +1,5 @@
 
-all: test 
+all: bin
 
 test.c: test/test.c 
 	gcc -Wall -Isrc -o bin/test test/test.c src/cb0r.c
@@ -11,10 +11,10 @@ test: test.c
 		echo "TESTS FAILED"; exit 1; \
 	fi; \
 
-example: bin/example.c 
-	gcc -Wall -Isrc -o bin/example bin/example.c  src/cb0r.c
+bin: bin/cb0r.c 
+	gcc -Wall -Isrc -o bin/cb0r bin/cb0r.c  src/cb0r.c
 
 clean:
-	rm -f bin/example bin/test
+	rm -f bin/cb0r bin/test
 
-.PHONY: all test clean
+.PHONY: all test clean bin
