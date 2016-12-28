@@ -1,14 +1,12 @@
 # cb0r - Minimal Zero-Footprint [CBOR](http://cbor.io) Decoder in C
 
-> NOTE - this code is not functioning yet, consider using [cn-cbor](https://github.com/cabo/cn-cbor) until I find more time/demand to get this working
-
-A one-pass minimal overhead walk of the raw bytes using a fast jump table to determine state transitions.
+A one-pass minimal malloc-free walk of the raw bytes using a fast jump table to determine state transitions and decode a result.
 
 * public domain, single cb0r.c file with one function
 * easy to use, just returns a given type, value, and offset locations in the bytes
-* no dependencies, embedded friendly
+* no dependencies, designed for embedded use
 * requires no memory/malloc or copying, uses only what is passed in
-* safely stops on anything bad
+* safely stops on anything invalid
 
 For other CBOR implementations check [http://cbor.io/impls.html](http://cbor.io/impls.html).
 
@@ -20,4 +18,4 @@ For other CBOR implementations check [http://cbor.io/impls.html](http://cbor.io/
 * returns end pointer to byte following the item value (may be == stop for complete, > stop for item value length overflow)
 * can very efficiently skip any number of leading items of any type
 * see [header](src/cb0r.h) for result structure and types
-* indefinite length types will be resolved/counted before returning
+* fully supports maps, arrays, and indefinite length types

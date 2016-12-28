@@ -3,9 +3,13 @@
 
 #include "cb0r.h"
 
-#include <stdio.h>
+// unhelpful warning noise for syntax used in cb0r()
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Winitializer-overrides"
+#pragma GCC diagnostic ignored "-Woverride-init"
 
-// start at bin, returns end pointer (== stop if complete), either performs count items or extracts result of current item
+// start at bin, returns end pointer (== stop if complete), either skips items or extracts result of current item
 uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 {
   // type byte is fully unrolled for structure only
