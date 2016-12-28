@@ -12,7 +12,7 @@ test: test.c
 	fi; \
 
 example: bin/example.c 
-	gcc -Wall -Isrc -o bin/example bin/example.c 
+	gcc -Wall -Isrc -o bin/example bin/example.c  src/cb0r.c
 
 clean:
 	rm -f bin/example bin/test
