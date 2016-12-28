@@ -2,7 +2,7 @@
 
 A one-pass minimal malloc-free walk of the raw bytes using a fast jump table to determine state transitions and decode a result.
 
-* public domain, single cb0r.c file with one function
+* public domain, single [cb0r.c](src/cb0r.c) file with one ~200 line function
 * easy to use, just returns a given type, value, and offset locations in the bytes
 * no dependencies, designed for embedded use
 * requires no memory/malloc or copying, uses only what is passed in
