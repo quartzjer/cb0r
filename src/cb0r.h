@@ -16,18 +16,19 @@
 #endif
 
 typedef enum {
-  CB0R_INT = 0, // positive integer in value
-  CB0R_NEG    , // negative integer in value (-1 - value)
-  CB0R_BYTE   , // start+length
-  CB0R_UTF8   , // start+length
-  CB0R_ARRAY  , // start+count
-  CB0R_MAP    , // start+count (count*2 items)
-  CB0R_TAG    , // 
-  CB0R_FLOAT  , // fvalue
-  CB0R_TRUE   , // 
-  CB0R_FALSE  , // 
-  CB0R_NULL   , // 
-  CB0R_UNDEF  , // 
+  CB0R_INT = 0,
+  CB0R_NEG    ,
+  CB0R_BYTE   ,
+  CB0R_UTF8   ,
+  CB0R_ARRAY  ,
+  CB0R_MAP    ,
+  CB0R_TAG    ,
+  CB0R_SIMPLE ,
+  CB0R_FLOAT  ,
+  CB0R_TRUE   ,
+  CB0R_FALSE  ,
+  CB0R_NULL   ,
+  CB0R_UNDEF  ,
   CB0R_ERR    , // if(type >= CB0R_ERR) 
   CB0R_EPARSE , // invalid structure 
   CB0R_EBAD   , // invalid type byte

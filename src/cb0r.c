@@ -8,6 +8,7 @@
 // start at bin, returns end pointer (== stop if complete), either performs count items or extracts result of current item
 uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 {
+  // type byte is fully unrolled for structure only
   static const void *go[] RODATA_SEGMENT_CONSTANT = 
   {
     [0x00 ... 0xff] = &&l_ebad,
@@ -29,13 +30,8 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     [0xbf] = &&l_until,
     [0xc0 ... 0xd7] = &&l_int,
     [0xd8] = &&l_int1, [0xd9] = &&l_int2,[0xda] = &&l_int4, [0xdb] = &&l_int8,
-    [0xe0 ... 0xf3] = &&l_simplev,
-    [0xf4] = &&l_false,
-    [0xf5] = &&l_true,
-    [0xf6] = &&l_null,
-    [0xf7] = &&l_undefined,
-    [0xf8] = &&l_simple,
-    [0xf9 ... 0xfb] = &&l_float,
+    [0xe0 ... 0xf7] = &&l_int,
+    [0xf8] = &&l_int1, [0xf9] = &&l_int2,[0xfa] = &&l_int4, [0xfb] = &&l_int8,
     [0xff] = &&l_break
   };
 
@@ -48,6 +44,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
   goto *go[*start];
 
+  // all types using integer structure
   l_int8:
     end += 4;
   l_int4:
@@ -59,6 +56,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   l_int: 
     goto l_finish;
 
+  // bytes and string structures
   l_byte4:
     size = 2;
     end += (uint32_t)(start[1]) << 24;
@@ -70,11 +68,11 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     size += 1;
     end += start[size] + size;
     goto l_finish;
-
   l_byte: 
     end += (start[0] & 0x1f);
     goto l_finish;
 
+  // array and map structures
   l_array4:
     size = 2;
     count += (uint32_t)(start[1]) << 24;
@@ -86,13 +84,12 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     size += 1;
     count += start[size];
     goto l_skip;
-
   l_array: 
     count = (start[0] & 0x1f);
     goto l_skip;
 
-  // skip fixed count items (stored as diff between end and start)
-  l_skip: {
+  // skip fixed count of items in an array/map 
+  l_skip:
     if(count)
     {
       // map is double array
@@ -102,20 +99,12 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
       end += size;
     }
     goto l_finish;
-  }
 
-  l_until: // indefinite length wrapper
+  // indefinite length wrapper
+  l_until:
     count = UINT32_MAX;
     end = cb0r(start+1,stop,count,NULL);
     goto l_finish;
-
-  l_simplev:
-  l_false:
-  l_true:
-  l_null:
-  l_undefined:
-  l_simple:
-  l_float:
 
   l_break: {
     if(skip != UINT32_MAX) goto l_eparse;
@@ -168,7 +157,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
             result->value |= start[size];
             break;
           case 0:
-            result->value = start[size] & 0x1f;
+            result->value = start[0] & 0x1f;
         }
       } break;
 
@@ -184,22 +173,56 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
         result->start += size;
         result->count = count;
       } break;
+
       case CB0R_TAG: {
 
       } break;
-      case CB0R_FLOAT: {
 
+      case CB0R_SIMPLE: {
+        result->value = (start[0] & 0x1f);
+        switch(result->value)
+        {
+          case 20:
+            result->type = CB0R_FALSE;
+            break;
+          case 21:
+            result->type = CB0R_TRUE;
+            break;
+          case 22:
+            result->type = CB0R_NULL;
+            break;
+          case 23:
+            result->type = CB0R_UNDEF;
+            break;
+          case 24:
+            if(start[1] >= 32) result->value = start[1];
+            else result->type = CB0R_EBAD;
+            break;
+          case 25:
+            result->type = CB0R_FLOAT;
+            result->length = 2;
+            break;
+          case 26:
+            result->type = CB0R_FLOAT;
+            result->length = 4;
+            break;
+          case 27:
+            result->type = CB0R_FLOAT;
+            result->length = 8;
+            break;
+        }
       } break;
-      default: {
 
+      default: {
+        result->type = CB0R_ERR;
       }
     }
     return end;
   }
 
-  // max means streaming mode skip
+  // max means indefinite mode skip
   if(skip != UINT32_MAX) skip--;
 
-  // tail recurse while skipping
+  // tail recurse while skipping to not stack bloat
   return cb0r(end, stop, skip, result);
 }
