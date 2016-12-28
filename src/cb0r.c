@@ -27,15 +27,8 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     [0xa0 ... 0xb7] = &&l_array,
     [0xb8] = &&l_array1, [0xb9] = &&l_array2,[0xba] = &&l_array4, [0xbb] = &&l_ebig,
     [0xbf] = &&l_until,
-    [0xc0] = &&l_datet,
-    [0xc1] = &&l_datee,
-    [0xc2] = &&l_ubig,
-    [0xc3] = &&l_nbig,
-    [0xc4] = &&l_fraction,
-    [0xc5] = &&l_fbig,
-    [0xc6 ... 0xd4] = &&l_tagv,
-    [0xd5 ... 0xd7] = &&l_convert,
-    [0xd8 ... 0xdb] = &&l_tag,
+    [0xc0 ... 0xd7] = &&l_int,
+    [0xd8] = &&l_int1, [0xd9] = &&l_int2,[0xda] = &&l_int4, [0xdb] = &&l_int8,
     [0xe0 ... 0xf3] = &&l_simplev,
     [0xf4] = &&l_false,
     [0xf5] = &&l_true,
@@ -112,18 +105,10 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   }
 
   l_until: // indefinite length wrapper
-    end = cb0r(start+1,stop,UINT32_MAX,NULL);
+    count = UINT32_MAX;
+    end = cb0r(start+1,stop,count,NULL);
     goto l_finish;
 
-  l_datet:
-  l_datee:
-  l_ubig:
-  l_nbig:
-  l_fraction:
-  l_fbig:
-  l_tagv:
-  l_convert:
-  l_tag:
   l_simplev:
   l_false:
   l_true:
@@ -190,7 +175,8 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
       case CB0R_BYTE:
       case CB0R_UTF8: {
         result->start += size;
-        result->length = end - (result->start + size);
+        if(count) result->count = count;
+        else result->length = end - (result->start + size);
       } break;
 
       case CB0R_ARRAY:
