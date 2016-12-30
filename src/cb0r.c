@@ -48,8 +48,8 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     [0xbf] = &&l_until,
 
     // Major type 7 CB0R_TAG
-    [0xc0 ... 0xd7] = &&l_int,
-    [0xd8] = &&l_int1, [0xd9] = &&l_int2,[0xda] = &&l_int4, [0xdb] = &&l_int8,
+    [0xc0 ... 0xd7] = &&l_tag,
+    [0xd8] = &&l_tag1, [0xd9] = &&l_tag2,[0xda] = &&l_tag4, [0xdb] = &&l_tag8,
 
     // Major type 8 CB0R_SIMPLE / CB0R_FLOAT
     [0xe0 ... 0xf7] = &&l_int,
@@ -122,6 +122,20 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     }
     goto l_finish;
 
+  // cross between l_int and l_array
+  l_tag8:
+    size = 4;
+  l_tag4:
+    size += 2;
+  l_tag2:
+    size += 1;
+  l_tag1:
+    size += 1;
+  l_tag: 
+    // tag is like an array of 1
+    end = cb0r(start+size+1,stop,1,NULL);
+    goto l_finish;
+
   // indefinite length wrapper
   l_until:
     count = UINT32_MAX;
@@ -164,8 +178,9 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     switch(type)
     {
       case CB0R_INT:
-      case CB0R_NEG: {
+      case CB0R_NEG: 
         size = end - result->start;
+      case CB0R_TAG: {
         switch(size)
         {
           case 8:
@@ -177,6 +192,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
             result->value |= (uint32_t)(start[size - 1]) << 8;
           case 1:
             result->value |= start[size];
+            result->start += size;
             break;
           case 0:
             result->value = start[0] & 0x1f;
@@ -194,10 +210,6 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
       case CB0R_MAP: {
         result->start += size;
         result->count = count;
-      } break;
-
-      case CB0R_TAG: {
-
       } break;
 
       case CB0R_SIMPLE: {
