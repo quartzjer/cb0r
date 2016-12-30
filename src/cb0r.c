@@ -205,8 +205,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
       case CB0R_BYTE:
       case CB0R_UTF8: {
         result->start += size;
-        if(count) result->count = count;
-        else result->length = end - (result->start + size);
+        result->length = end - result->start;
       } break;
 
       case CB0R_ARRAY:
