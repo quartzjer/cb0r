@@ -16,24 +16,42 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   static const void *go[] RODATA_SEGMENT_CONSTANT = 
   {
     [0x00 ... 0xff] = &&l_ebad,
+
+    // first 5 bits
     [0x00 ... 0x17] = &&l_int,
+
+    // Major type 1 CB0R_INT
     [0x18] = &&l_int1, [0x19] = &&l_int2,[0x1a] = &&l_int4, [0x1b] = &&l_int8,
     [0x20 ... 0x37] = &&l_int,
+
+    // Major type 2 CB0R_NEG
     [0x38] = &&l_int1, [0x39] = &&l_int2,[0x3a] = &&l_int4, [0x3b] = &&l_int8,
     [0x40 ... 0x57] = &&l_byte,
+
+    // Major type 3 CB0R_BYTE
     [0x58] = &&l_byte1, [0x59] = &&l_byte2,[0x5a] = &&l_byte4, [0x5b] = &&l_ebig,
     [0x5f] = &&l_until,
+
+    // Major type 4 CB0R_UTF8
     [0x60 ... 0x77] = &&l_byte,
     [0x78] = &&l_byte1, [0x79] = &&l_byte2,[0x7a] = &&l_byte4, [0x7b] = &&l_ebig,
     [0x7f] = &&l_until,
+
+    // Major type 5 CB0R_ARRAY
     [0x80 ... 0x97] = &&l_array,
     [0x98] = &&l_array1, [0x99] = &&l_array2,[0x9a] = &&l_array4, [0x9b] = &&l_ebig,
     [0x9f] = &&l_until,
+
+    // Major type 6 CB0R_MAP
     [0xa0 ... 0xb7] = &&l_array,
     [0xb8] = &&l_array1, [0xb9] = &&l_array2,[0xba] = &&l_array4, [0xbb] = &&l_ebig,
     [0xbf] = &&l_until,
+
+    // Major type 7 CB0R_TAG
     [0xc0 ... 0xd7] = &&l_int,
     [0xd8] = &&l_int1, [0xd9] = &&l_int2,[0xda] = &&l_int4, [0xdb] = &&l_int8,
+
+    // Major type 8 CB0R_SIMPLE / CB0R_FLOAT
     [0xe0 ... 0xf7] = &&l_int,
     [0xf8] = &&l_int1, [0xf9] = &&l_int2,[0xfa] = &&l_int4, [0xfb] = &&l_int8,
     [0xff] = &&l_break
