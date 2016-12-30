@@ -184,7 +184,10 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
         switch(size)
         {
           case 8:
-            // implementations can use start[8] to get 64 bit number
+            result->value |= (uint64_t)(start[size - 7]) << 56;
+            result->value |= (uint64_t)(start[size - 6]) << 48;
+            result->value |= (uint64_t)(start[size - 5]) << 40;
+            result->value |= (uint64_t)(start[size - 4]) << 32;
           case 4:
             result->value |= (uint32_t)(start[size - 3]) << 24;
             result->value |= (uint32_t)(start[size - 2]) << 16;

@@ -39,9 +39,9 @@ typedef struct cb0r_s
   cb0r_e type;
   uint8_t *start;
   union { // different names/aliases for context readability based on type
-    uint32_t length;
-    uint32_t count;
-    uint32_t value;
+    uint64_t length;
+    uint64_t count;
+    uint64_t value;
   };
 } cb0r_s, *cb0r_t;
 
