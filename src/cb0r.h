@@ -17,9 +17,9 @@ typedef enum {
   CB0R_ARRAY  ,
   CB0R_MAP    ,
   CB0R_TAG    ,
-  CB0R_SIMPLE ,
+  CB0R_SIMPLE , // 7, last of the major types
+  CB0R_FALSE  , // 8+12 = 20, the simple value
   CB0R_TRUE   ,
-  CB0R_FALSE  ,
   CB0R_NULL   ,
   CB0R_UNDEF  ,
   CB0R_FLOAT  ,
