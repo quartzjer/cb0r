@@ -132,8 +132,8 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   l_tag1:
     size += 1;
   l_tag: 
-    // tag is like an array of 1
-    end = cb0r(start+size+1,stop,1,NULL);
+    // tag is like an array of 1, just grabs next item
+    end = cb0r(start+size+1,stop,0,NULL);
     goto l_finish;
 
   // indefinite length wrapper
