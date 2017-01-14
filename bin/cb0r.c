@@ -44,6 +44,83 @@ uint8_t *load(char *file, int32_t *len)
   return buf;
 }
 
+size_t describe(uint8_t *in, size_t inlen, char *out, uint32_t skip)
+{
+  size_t outlen = 0;
+  cb0r_s res = {0,};
+  uint8_t *end = cb0r(in,in+inlen,skip,&res);
+  switch(res.type)
+  {
+    case CB0R_INT: {
+      outlen = sprintf(out,"%llu",res.value);
+    } break;
+    case CB0R_NEG: {
+      outlen = sprintf(out,"-%llu",res.value+1);
+    } break;
+    case CB0R_BYTE: {
+    } break;
+    case CB0R_UTF8: {
+      outlen = sprintf(out,"\"%.*s\"",(int)res.length,res.start);
+    } break;
+    case CB0R_ARRAY: {
+      outlen += sprintf(out+outlen,"[");
+      // streaming, need to find end
+      if(res.count == UINT32_MAX)
+      {
+        cb0r_s res2 = {0,};
+        uint8_t *end2 = res.start;
+        for(res.count = 0;(end2 = cb0r(end2,end,0,&res2));res.count++) if(res2.type == CB0R_BREAK) break;
+      }
+      for(uint32_t i=0;i<res.count;i++)
+      {
+        if(i) outlen += sprintf(out+outlen,",");
+        outlen += describe(res.start,end-res.start,out+outlen,i);
+      }
+      outlen += sprintf(out+outlen,"]");
+    } break;
+    case CB0R_MAP: {
+      outlen += sprintf(out+outlen,"{");
+      // streaming, need to find end
+      if(res.count == UINT32_MAX)
+      {
+        cb0r_s res2 = {0,};
+        uint8_t *end2 = res.start;
+        for(res.count = 0;(end2 = cb0r(end2,end,0,&res2));res.count++) if(res2.type == CB0R_BREAK) break;
+      }
+      for(uint32_t i=0;i<res.count;i++)
+      {
+        if(i) outlen += sprintf(out+outlen,",");
+        outlen += describe(res.start,end-res.start,out+outlen,i*2);
+        outlen += sprintf(out+outlen,":");
+        outlen += describe(res.start,end-res.start,out+outlen,(i*2)+1);
+      }
+      outlen += sprintf(out+outlen,"}");
+    } break;
+    case CB0R_TAG: {
+      cb0r_s res2 = {0,};
+      cb0r(res.start,end,0,&res2);
+      if(res.value == 21 && res2.type == CB0R_BYTE)
+      {
+        outlen += sprintf(out+outlen,"BYTES");
+      }
+    } break;
+    case CB0R_FALSE: {
+      outlen = sprintf(out,"false");
+    } break;
+    case CB0R_TRUE: {
+      outlen = sprintf(out,"true");
+    } break;
+    case CB0R_NULL: {
+      outlen = sprintf(out,"null");
+    } break;
+    default: {
+      outlen = sprintf(out,"TODO");
+    } break;
+
+  }
+  return outlen;
+}
+
 int main(int argc, char **argv)
 {
   if(argc != 2)
@@ -56,12 +133,13 @@ int main(int argc, char **argv)
   uint8_t *bin = load(argv[1],&len);
   if(!bin) return -1;
 
-  cb0r_s res = {0,};
-  uint8_t *end = cb0r(bin,bin+len,0,&res);
-
-  printf("type %d len %ld\n",res.type,end-bin);
+  char *out = malloc(len*4);
+  memset(out,0,len*4);
+  describe(bin, len, out, 0);
+  printf("%s\n",out);
 
   free(bin);
+  free(out);
   return 0;
 }
 
