@@ -5,6 +5,13 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#ifndef cb0r_h
+#define cb0r_h
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef RODATA_SEGMENT_CONSTANT
 #define RODATA_SEGMENT_CONSTANT
 #endif
@@ -48,4 +55,9 @@ typedef struct cb0r_s
 // start at bin, returns end pointer (== stop if complete), either skips items or extracts result of current item
 uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result);
 
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif // cb0r_h
 
