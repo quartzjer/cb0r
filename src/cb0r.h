@@ -32,6 +32,7 @@ typedef enum {
   CB0R_NULL   ,
   CB0R_UNDEF  ,
   CB0R_FLOAT  ,
+  CB0R_BREAK  ,
 
   // if(type >= CB0R_ERR) ...
   CB0R_ERR = 32,

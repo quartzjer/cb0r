@@ -246,6 +246,9 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
             result->type = CB0R_FLOAT;
             result->length = 8;
             break;
+          case 31:
+            result->type = CB0R_BREAK;
+            break;
         }
       } break;
 
