@@ -114,9 +114,9 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   l_skip:
     if(count)
     {
-      // map is double array
-      if(start[0] & 0x20) end = cb0r(start+size+1,stop,(count*2)-1,NULL);
-      else end = cb0r(start+size+1,stop,count-1,NULL);
+      // double map for actual count
+      if(start[0] & 0x20) count <<= 1;
+      end = cb0r(start+size+1,stop,count-1,NULL);
     }else{
       end += size;
     }

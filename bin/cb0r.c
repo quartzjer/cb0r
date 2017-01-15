@@ -64,8 +64,9 @@ size_t describe(uint8_t *in, size_t inlen, char *out, uint32_t skip)
       outlen = sprintf(out,"\"%.*s\"",(int)res.length,res.start);
       break;
     };
-    case CB0R_ARRAY: {
-      outlen += sprintf(out+outlen,"[");
+    case CB0R_ARRAY:
+    case CB0R_MAP: {
+      outlen += sprintf(out+outlen,(res.type==CB0R_MAP)?"{":"[");
       // streaming, need to find end first
       if(res.count == CB0R_STREAM)
       {
@@ -76,26 +77,11 @@ size_t describe(uint8_t *in, size_t inlen, char *out, uint32_t skip)
       {
         if(i) outlen += sprintf(out+outlen,",");
         outlen += describe(res.start,end-res.start,out+outlen,i);
-      }
-      outlen += sprintf(out+outlen,"]");
-    } break;
-    case CB0R_MAP: {
-      outlen += sprintf(out+outlen,"{");
-      // streaming, need to find end first
-      if(res.count == CB0R_STREAM)
-      {
-        res.count = 0;
-        cb0r(res.start,end,CB0R_STREAM,&res);
-        res.count /= 2;
-      }
-      for(uint32_t i=0;i<res.count;i++)
-      {
-        if(i) outlen += sprintf(out+outlen,",");
-        outlen += describe(res.start,end-res.start,out+outlen,i*2);
+        if(res.type != CB0R_MAP) continue;
         outlen += sprintf(out+outlen,":");
-        outlen += describe(res.start,end-res.start,out+outlen,(i*2)+1);
+        outlen += describe(res.start,end-res.start,out+outlen,++i);
       }
-      outlen += sprintf(out+outlen,"}");
+      outlen += sprintf(out+outlen,(res.type==CB0R_MAP)?"}":"]");
     } break;
     case CB0R_TAG: {
       cb0r_s res2 = {0,};

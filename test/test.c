@@ -141,7 +141,7 @@ int main(int argc, char **argv)
   end = cb0r(start, start+len, 0, res);
   fail_unless(end == start+len);
   fail_unless(res->type == CB0R_MAP);
-  fail_unless(res->count == 1);
+  fail_unless(res->count == 2);
 
   len = unhex("0117",start);
   end = cb0r(start, start+len, 0, NULL);
