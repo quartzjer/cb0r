@@ -170,6 +170,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   {
     if(!result) return end;
     result->start = start+1;
+    result->end = end;
     result->type = type;
     result->value = 0;
     switch(type)

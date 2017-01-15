@@ -84,12 +84,10 @@ size_t describe(uint8_t *in, size_t inlen, char *out, uint32_t skip)
       outlen += sprintf(out+outlen,(res.type==CB0R_MAP)?"}":"]");
     } break;
     case CB0R_TAG: {
-      cb0r_s res2 = {0,};
-      cb0r(res.start,end,0,&res2);
-      if(res.value == 21 && res2.type == CB0R_BYTE)
-      {
-        outlen += sprintf(out+outlen,"BYTES");
-      }
+      outlen += sprintf(out+outlen,"TAG[%llu]",res.value);
+    } break;
+    case CB0R_SIMPLE: {
+      outlen += sprintf(out+outlen,"SIMPLE[%llu]",res.value);
     } break;
     case CB0R_FALSE: {
       outlen = sprintf(out,"false");
@@ -100,9 +98,16 @@ size_t describe(uint8_t *in, size_t inlen, char *out, uint32_t skip)
     case CB0R_NULL: {
       outlen = sprintf(out,"null");
     } break;
+    case CB0R_UNDEF: {
+      outlen = sprintf(out,"undefined");
+    } break;
+    case CB0R_FLOAT: {
+      outlen = sprintf(out,"FLOAT[%llu]",res.length);
+    } break;
     default: {
-      if(res.type >= CB0R_ERR) outlen = sprintf(out,"ERR%u!",res.type);
-      else outlen = sprintf(out,"TODO%u",res.type);
+      if(res.type > CB0R_TAGS && res.type < CB0R_SIMPLES) outlen = sprintf(out,"TAGS[%u]",res.type);
+      else if(res.type >= CB0R_ERR) outlen = sprintf(out,"ERR![%u]",res.type);
+      else outlen = sprintf(out,"TODO[%u]",res.type);
     } break;
 
   }

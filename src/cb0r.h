@@ -32,7 +32,8 @@ typedef enum {
   CB0R_SIMPLE   ,
 
   // expand standard base tags
-  CB0R_DATETIME = 8,
+  CB0R_TAGS = 8 , // if(type > CB0R_TAGS && type < CB0R_SIMPLES)
+  CB0R_DATETIME ,
   CB0R_EPOCH    ,
   CB0R_BIGNUM   ,
   CB0R_BIGNEG   ,
@@ -44,7 +45,8 @@ typedef enum {
   CB0R_DATA     ,
 
   // expand standard simple values
-  CB0R_FALSE = 24,
+  CB0R_SIMPLES = 24,
+  CB0R_FALSE    ,
   CB0R_TRUE     ,
   CB0R_NULL     ,
   CB0R_UNDEF    ,
@@ -62,6 +64,7 @@ typedef struct cb0r_s
 {
   cb0r_e type;
   uint8_t *start;
+  uint8_t *end;
   union { // different names/aliases for context readability based on type
     uint64_t length;
     uint64_t count;
