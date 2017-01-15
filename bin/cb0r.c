@@ -101,7 +101,8 @@ size_t describe(uint8_t *in, size_t inlen, char *out, uint32_t skip)
       outlen = sprintf(out,"null");
     } break;
     default: {
-      outlen = sprintf(out,"TODO");
+      if(res.type >= CB0R_ERR) outlen = sprintf(out,"ERR%u!",res.type);
+      else outlen = sprintf(out,"TODO%u",res.type);
     } break;
 
   }

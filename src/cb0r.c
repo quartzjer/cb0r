@@ -196,6 +196,19 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
             break;
           case 0:
             result->value = start[0] & 0x1f;
+            if(type == CB0R_TAG) switch(result->value)
+            {
+              case 0: result->type = CB0R_DATETIME; break;
+              case 1: result->type = CB0R_EPOCH; break;
+              case 2: result->type = CB0R_BIGNUM; break;
+              case 3: result->type = CB0R_BIGNEG; break;
+              case 4: result->type = CB0R_FRACTION; break;
+              case 5: result->type = CB0R_BIGFLOAT; break;
+              case 21: result->type = CB0R_BASE64URL; break;
+              case 22: result->type = CB0R_BASE64; break;
+              case 23: result->type = CB0R_HEX; break;
+              case 24: result->type = CB0R_DATA; break;
+            }
         }
       } break;
 
@@ -216,18 +229,10 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
         result->value = (start[0] & 0x1f);
         switch(result->value)
         {
-          case 20:
-            result->type = CB0R_FALSE;
-            break;
-          case 21:
-            result->type = CB0R_TRUE;
-            break;
-          case 22:
-            result->type = CB0R_NULL;
-            break;
-          case 23:
-            result->type = CB0R_UNDEF;
-            break;
+          case 20: result->type = CB0R_FALSE; break;
+          case 21: result->type = CB0R_TRUE; break;
+          case 22: result->type = CB0R_NULL; break;
+          case 23: result->type = CB0R_UNDEF; break;
           case 24:
             if(start[1] >= 32) result->value = start[1];
             else result->type = CB0R_EBAD;
@@ -243,9 +248,6 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
           case 27:
             result->type = CB0R_FLOAT;
             result->length = 8;
-            break;
-          case 31:
-            result->type = CB0R_BREAK;
             break;
         }
       } break;

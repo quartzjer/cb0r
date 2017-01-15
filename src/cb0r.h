@@ -21,28 +21,40 @@ extern "C" {
 
 // flattened result types
 typedef enum {
-  CB0R_INT = 0,
-  CB0R_NEG    ,
-  CB0R_BYTE   ,
-  CB0R_UTF8   ,
-  CB0R_ARRAY  ,
-  CB0R_MAP    ,
-  CB0R_TAG    ,
-  CB0R_SIMPLE , // 7, last of the major types
+  CB0R_INT = 0  ,
+  CB0R_NEG      ,
+  CB0R_BYTE     ,
+  CB0R_UTF8     ,
+  CB0R_ARRAY    ,
+  CB0R_MAP      ,
+  // "unassigned" tag/simple values are this base type, rest expanded below
+  CB0R_TAG      ,
+  CB0R_SIMPLE   ,
 
-  // the simple values
-  CB0R_FALSE = 20 ,
-  CB0R_TRUE   ,
-  CB0R_NULL   ,
-  CB0R_UNDEF  ,
-  CB0R_FLOAT  ,
-  CB0R_BREAK  ,
+  // expand standard base tags
+  CB0R_DATETIME = 8,
+  CB0R_EPOCH    ,
+  CB0R_BIGNUM   ,
+  CB0R_BIGNEG   ,
+  CB0R_FRACTION ,
+  CB0R_BIGFLOAT ,
+  CB0R_BASE64URL,
+  CB0R_BASE64   ,
+  CB0R_HEX      ,
+  CB0R_DATA     ,
+
+  // expand standard simple values
+  CB0R_FALSE = 24,
+  CB0R_TRUE     ,
+  CB0R_NULL     ,
+  CB0R_UNDEF    ,
+  CB0R_FLOAT    ,
 
   // if(type >= CB0R_ERR) ...
-  CB0R_ERR = 32,
-  CB0R_EPARSE , // invalid structure 
-  CB0R_EBAD   , // invalid type byte
-  CB0R_EBIG   , // unsupported size item
+  CB0R_ERR = 224,
+  CB0R_EPARSE   , // invalid structure 
+  CB0R_EBAD     , // invalid type byte
+  CB0R_EBIG     , // unsupported size item
   CB0R_EMAX
 } cb0r_e;
 
