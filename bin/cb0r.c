@@ -57,19 +57,20 @@ size_t describe(uint8_t *in, size_t inlen, char *out, uint32_t skip)
     case CB0R_NEG: {
       outlen = sprintf(out,"-%llu",res.value+1);
     } break;
-    case CB0R_BYTE: {
-    } break;
-    case CB0R_UTF8: {
+    case CB0R_BYTE: if(res.count != CB0R_STREAM) {
+      break;
+    };
+    case CB0R_UTF8: if(res.count != CB0R_STREAM) {
       outlen = sprintf(out,"\"%.*s\"",(int)res.length,res.start);
-    } break;
+      break;
+    };
     case CB0R_ARRAY: {
       outlen += sprintf(out+outlen,"[");
-      // streaming, need to find end
-      if(res.count == UINT32_MAX)
+      // streaming, need to find end first
+      if(res.count == CB0R_STREAM)
       {
-        cb0r_s res2 = {0,};
-        uint8_t *end2 = res.start;
-        for(res.count = 0;(end2 = cb0r(end2,end,0,&res2));res.count++) if(res2.type == CB0R_BREAK) break;
+        res.count = 0;
+        cb0r(res.start,end,CB0R_STREAM,&res);
       }
       for(uint32_t i=0;i<res.count;i++)
       {
@@ -80,12 +81,12 @@ size_t describe(uint8_t *in, size_t inlen, char *out, uint32_t skip)
     } break;
     case CB0R_MAP: {
       outlen += sprintf(out+outlen,"{");
-      // streaming, need to find end
-      if(res.count == UINT32_MAX)
+      // streaming, need to find end first
+      if(res.count == CB0R_STREAM)
       {
-        cb0r_s res2 = {0,};
-        uint8_t *end2 = res.start;
-        for(res.count = 0;(end2 = cb0r(end2,end,0,&res2));res.count++) if(res2.type == CB0R_BREAK) break;
+        res.count = 0;
+        cb0r(res.start,end,CB0R_STREAM,&res);
+        res.count /= 2;
       }
       for(uint32_t i=0;i<res.count;i++)
       {

@@ -138,14 +138,13 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
   // indefinite length wrapper
   l_until:
-    count = UINT32_MAX;
+    count = CB0R_STREAM;
     end = cb0r(start+1,stop,count,NULL);
     goto l_finish;
 
   l_break: {
-    if(skip != UINT32_MAX) goto l_eparse;
-    skip = 0;
-    goto l_done;
+    if(skip == CB0R_STREAM) return end;
+    goto l_eparse;
   }
 
   l_ebad:
@@ -165,8 +164,6 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
   l_finish: // only first 7 types
     type = (start[0] >> 5);
-
-  l_done:
 
   // done done, extract value if result requested
   if(!skip)
@@ -205,7 +202,8 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
       case CB0R_BYTE:
       case CB0R_UTF8: {
         result->start += size;
-        result->length = end - result->start;
+        if(count == CB0R_STREAM) result->count = count;
+        else result->length = end - result->start;
       } break;
 
       case CB0R_ARRAY:
@@ -260,7 +258,8 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   }
 
   // max means indefinite mode skip
-  if(skip != UINT32_MAX) skip--;
+  if(skip != CB0R_STREAM) skip--;
+  else if(result) result->count++;
 
   // tail recurse while skipping to not stack bloat
   return cb0r(end, stop, skip, result);

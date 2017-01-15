@@ -16,6 +16,10 @@ extern "C" {
 #define RODATA_SEGMENT_CONSTANT
 #endif
 
+// ->count value for indefinite length items
+#define CB0R_STREAM UINT32_MAX
+
+// flattened result types
 typedef enum {
   CB0R_INT = 0,
   CB0R_NEG    ,
