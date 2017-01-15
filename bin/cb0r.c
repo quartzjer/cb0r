@@ -44,11 +44,11 @@ uint8_t *load(char *file, int32_t *len)
   return buf;
 }
 
-size_t describe(uint8_t *in, size_t inlen, char *out, uint32_t skip)
+size_t describe(cb0r_t in, char *out, uint32_t skip)
 {
   size_t outlen = 0;
   cb0r_s res = {0,};
-  uint8_t *end = cb0r(in,in+inlen,skip,&res);
+  cb0r(in->start,in->end,skip,&res);
   switch(res.type)
   {
     case CB0R_INT: {
@@ -71,15 +71,15 @@ size_t describe(uint8_t *in, size_t inlen, char *out, uint32_t skip)
       if(res.count == CB0R_STREAM)
       {
         res.count = 0;
-        cb0r(res.start,end,CB0R_STREAM,&res);
+        cb0r(res.start,res.end,CB0R_STREAM,&res);
       }
       for(uint32_t i=0;i<res.count;i++)
       {
         if(i) outlen += sprintf(out+outlen,",");
-        outlen += describe(res.start,end-res.start,out+outlen,i);
+        outlen += describe(&res,out+outlen,i);
         if(res.type != CB0R_MAP) continue;
         outlen += sprintf(out+outlen,":");
-        outlen += describe(res.start,end-res.start,out+outlen,++i);
+        outlen += describe(&res,out+outlen,++i);
       }
       outlen += sprintf(out+outlen,(res.type==CB0R_MAP)?"}":"]");
     } break;
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
 
   char *out = malloc(len*4);
   memset(out,0,len*4);
-  describe(bin, len, out, 0);
+  describe(&(cb0r_s){.type = CB0R_DATA, .start = bin, .end = bin+len, .length = len}, out, 0);
   printf("%s\n",out);
 
   free(bin);
