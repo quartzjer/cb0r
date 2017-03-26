@@ -72,7 +72,8 @@ typedef struct cb0r_s
   };
 } cb0r_s, *cb0r_t;
 
-// start at bin, returns end pointer (== stop if complete), either skips items or extracts result of current item
+// pass cbor bin via start/stop pointers, returns end pointer (== stop if complete)
+// can skip a given number of items and then will fill result w/ the current item
 uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result);
 
 #ifdef __cplusplus
