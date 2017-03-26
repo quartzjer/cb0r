@@ -254,7 +254,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
       } break;
 
       default: {
-        result->type = CB0R_ERR;
+        if(result->type < CB0R_ERR) result->type = CB0R_ERR;
       }
     }
     return end;
