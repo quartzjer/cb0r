@@ -48,7 +48,7 @@ size_t describe(cb0r_t in, char *out, uint32_t skip)
 {
   size_t outlen = 0;
   cb0r_s res = {0,};
-  cb0r(in->start,in->end,skip,&res);
+  cb0r(in->start+in->header,in->end,skip,&res);
   switch(res.type)
   {
     case CB0R_INT: {
@@ -61,7 +61,7 @@ size_t describe(cb0r_t in, char *out, uint32_t skip)
       break;
     };
     case CB0R_UTF8: if(res.count != CB0R_STREAM) {
-      outlen = sprintf(out,"\"%.*s\"",(int)res.length,res.start);
+      outlen = sprintf(out,"\"%.*s\"",(int)res.length,res.start+res.header);
       break;
     };
     case CB0R_ARRAY:
@@ -71,7 +71,7 @@ size_t describe(cb0r_t in, char *out, uint32_t skip)
       if(res.count == CB0R_STREAM)
       {
         res.count = 0;
-        cb0r(res.start,res.end,CB0R_STREAM,&res);
+        cb0r(res.start+res.header,res.end,CB0R_STREAM,&res);
       }
       for(uint32_t i=0;i<res.count;i++)
       {

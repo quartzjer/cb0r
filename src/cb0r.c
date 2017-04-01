@@ -169,7 +169,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   if(!skip)
   {
     if(!result) return end;
-    result->start = start+1;
+    result->start = start;
     result->end = end;
     result->type = type;
     result->value = 0;
@@ -177,7 +177,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     {
       case CB0R_INT:
       case CB0R_NEG: 
-        size = end - result->start;
+        size = end - (start + 1);
       case CB0R_TAG: {
         switch(size)
         {
@@ -193,7 +193,6 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
             result->value |= (uint32_t)(start[size - 1]) << 8;
           case 1:
             result->value |= start[size];
-            result->start += size;
             break;
           case 0:
             result->value = start[0] & 0x1f;
@@ -215,14 +214,12 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
       case CB0R_BYTE:
       case CB0R_UTF8: {
-        result->start += size;
         if(count == CB0R_STREAM) result->count = count;
-        else result->length = end - result->start;
+        else result->length = end - (start + 1);
       } break;
 
       case CB0R_ARRAY:
       case CB0R_MAP: {
-        result->start += size;
         result->count = count;
       } break;
 
@@ -257,6 +254,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
         if(result->type < CB0R_ERR) result->type = CB0R_ERR;
       }
     }
+    result->header = size + 1;
     return end;
   }
 

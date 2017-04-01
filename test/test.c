@@ -93,25 +93,25 @@ int main(int argc, char **argv)
   end = cb0r(start, start+len, 0, res);
   fail_unless(end == start+len);
   fail_unless(res->type == CB0R_BYTE);
-  fail_unless(memcmp(res->start,"a",res->length) == 0);
+  fail_unless(memcmp(res->start+res->header,"a",res->length) == 0);
 
   len = unhex("4568656c6c6f",start);
   end = cb0r(start, start+len, 0, res);
   fail_unless(end == start+len);
   fail_unless(res->type == CB0R_BYTE);
-  fail_unless(memcmp(res->start,"hello",res->length) == 0);
+  fail_unless(memcmp(res->start+res->header,"hello",res->length) == 0);
 
   len = unhex("581868656c6c6f6f6f6f6f6f6f6f6f6f6f6f6f6f206e75727365",start);
   end = cb0r(start, start+len, 0, res);
   fail_unless(end == start+len);
   fail_unless(res->type == CB0R_BYTE);
-  fail_unless(memcmp(res->start,"helloooooooooooooo nurse",res->length) == 0);
+  fail_unless(memcmp(res->start+res->header,"helloooooooooooooo nurse",res->length) == 0);
 
   len = unhex("6161",start);
   end = cb0r(start, start+len, 0, res);
   fail_unless(end == start+len);
   fail_unless(res->type == CB0R_UTF8);
-  fail_unless(memcmp(res->start,"a",res->length) == 0);
+  fail_unless(memcmp(res->start+res->header,"a",res->length) == 0);
 
   len = unhex("80",start);
   end = cb0r(start, start+len, 0, res);

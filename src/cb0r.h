@@ -62,7 +62,6 @@ typedef enum {
 
 typedef struct cb0r_s
 {
-  cb0r_e type;
   uint8_t *start;
   uint8_t *end;
   union { // different names/aliases for context readability based on type
@@ -70,6 +69,8 @@ typedef struct cb0r_s
     uint64_t count;
     uint64_t value;
   };
+  cb0r_e type:8;
+  uint8_t header; // size of the type header bytes, start+head points to type's contents (if any)
 } cb0r_s, *cb0r_t;
 
 // pass cbor bin via start/stop pointers, returns end pointer (== stop if complete)
