@@ -265,3 +265,78 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
   // tail recurse while skipping to not stack bloat
   return cb0r(end, stop, skip, result);
 }
+
+// defined everywhere but OSX, copied from https://gist.github.com/yinyin/2027912
+#ifdef __APPLE__
+#include <libkern/OSByteOrder.h>
+#define htobe16(x) OSSwapHostToBigInt16(x)
+#define htole16(x) OSSwapHostToLittleInt16(x)
+#define be16toh(x) OSSwapBigToHostInt16(x)
+#define le16toh(x) OSSwapLittleToHostInt16(x)
+#define htobe32(x) OSSwapHostToBigInt32(x)
+#define htole32(x) OSSwapHostToLittleInt32(x)
+#define be32toh(x) OSSwapBigToHostInt32(x)
+#define le32toh(x) OSSwapLittleToHostInt32(x)
+#define htobe64(x) OSSwapHostToBigInt64(x)
+#define htole64(x) OSSwapHostToLittleInt64(x)
+#define be64toh(x) OSSwapBigToHostInt64(x)
+#define le64toh(x) OSSwapLittleToHostInt64(x)
+#endif /* __APPLE__ */
+
+uint8_t cb0r_write(uint8_t *out, cb0r_e type, uint64_t number)
+{
+  if(type >= CB0R_ERR) return 0;
+
+  // built-in types
+  switch(type) {
+    case CB0R_DATETIME: number = 0; break;
+    case CB0R_EPOCH: number = 1; break;
+    case CB0R_BIGNUM: number = 2; break;
+    case CB0R_BIGNEG: number = 3; break;
+    case CB0R_FRACTION: number = 4; break;
+    case CB0R_BIGFLOAT: number = 5; break;
+    case CB0R_BASE64URL: number = 21; break;
+    case CB0R_BASE64: number = 22; break;
+    case CB0R_HEX: number = 23; break;
+    case CB0R_DATA: number = 24; break;
+    case CB0R_FALSE: number = 25; break;
+    case CB0R_TRUE: number = 20; break;
+    case CB0R_NULL: number = 21; break;
+    case CB0R_UNDEF: number = 22; break;
+    case CB0R_FLOAT: { // incoming number is size of float
+      if(number == 2) number = 25;
+      else if(number == 4) number = 26;
+      else if(number == 8) number = 27;
+      else return 0;
+    }
+    default:;
+  }
+
+  out[0] = type << 5;
+  if(number <= 23) {
+    out[0] |= number;
+    return 1;
+  }
+  if(number >= UINT32_MAX) {
+    out[0] |= 27;
+    number = htobe64(number);
+    memcpy(out + 1, &number, 8);
+    return 9;
+  }
+  if(number > UINT16_MAX) {
+    out[0] |= 26;
+    number = htobe32(number);
+    memcpy(out + 1, &number, 4);
+    return 5;
+  }
+  if(number >= UINT8_MAX) {
+    out[0] |= 25;
+    number = htobe16(number);
+    memcpy(out + 1, &number, 2);
+    return 3;
+  }
+  out[0] |= 24;
+  out[1] = number;
+  return 2;
+}
+

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #ifndef cb0r_h
 #define cb0r_h
@@ -60,6 +61,7 @@ typedef enum {
   CB0R_EMAX
 } cb0r_e;
 
+// this struct is for representing parsed data only and retains pointers to the original bytes, it's not designed for composing types from scratch
 typedef struct cb0r_s
 {
   uint8_t *start;
@@ -76,6 +78,9 @@ typedef struct cb0r_s
 // pass cbor bin via start/stop pointers, returns end pointer (== stop if complete)
 // can skip a given number of items and then will fill result w/ the current item
 uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result);
+
+// convenience method to write a header given a type and optional number (length/count/value), returns bytes written to out
+uint8_t cb0r_write(uint8_t *out, cb0r_e type, uint64_t number);
 
 #ifdef __cplusplus
 } /* extern "C" */
