@@ -1,9 +1,9 @@
-// by jeremie miller - 2015,2016
+// by jeremie miller - 2015-2017
 // public domain UNLICENSE, contributions/improvements welcome via github at https://github.com/quartzjer/cb0r
 
 #include "cb0r.h"
 
-// unhelpful warning noise for syntax used in cb0r()
+// unhelpful legacy GCC warning noise for syntax used in cb0r()
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Winitializer-overrides"
@@ -112,8 +112,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
   // skip fixed count of items in an array/map 
   l_skip:
-    if(count)
-    {
+    if(count) {
       // double map for actual count
       if(start[0] & 0x20) count <<= 1;
       end = cb0r(start+size+1,stop,count-1,NULL);
@@ -264,6 +263,75 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
 
   // tail recurse while skipping to not stack bloat
   return cb0r(end, stop, skip, result);
+}
+
+// safer high-level wrapper to read raw CBOR
+bool cb0r_read(uint8_t *in, uint32_t len, cb0r_t result)
+{
+  if(!in || !len || !result) return false;
+  cb0r(in, in+len, 0, result);
+  if(result->type >= CB0R_ERR) return false;
+  return true;
+}
+
+// fetch a given item from an array (or map), 0 index
+bool cb0r_get(cb0r_t array, uint32_t index, cb0r_t result)
+{
+  if(!array || !result) return false;
+  if(array->type != CB0R_ARRAY && array->type != CB0R_MAP) return false;
+  cb0r(array->start+array->header, array->end, index, result);
+  if(result->type >= CB0R_ERR) return false;
+  return true;
+}
+
+// get the value of a given key from a map, number/bytes only used for some types
+bool cb0r_find(cb0r_t map, cb0r_e type, uint64_t number, uint8_t *bytes, cb0r_t result)
+{
+  if(!map || !result) return false;
+  if(map->type != CB0R_MAP) return false;
+
+  for(uint32_t i = 0; i < map->length * 2; i += 2) {
+    cb0r_s item = {0,};
+    if(!cb0r_get(map, i, &item)) return false;
+    if(item.type != type) continue;
+    // either number compare or number+bytes compare
+    switch(type) {
+      case CB0R_INT:
+      case CB0R_NEG:
+      case CB0R_SIMPLE:
+      case CB0R_DATETIME:
+      case CB0R_EPOCH:
+      case CB0R_BIGNUM:
+      case CB0R_BIGNEG:
+      case CB0R_FRACTION:
+      case CB0R_BIGFLOAT:
+      case CB0R_BASE64URL:
+      case CB0R_BASE64:
+      case CB0R_HEX:
+      case CB0R_DATA:
+      case CB0R_FALSE:
+      case CB0R_TRUE:
+      case CB0R_NULL:
+      case CB0R_UNDEF:
+        if(number == item.value) return true;
+        break;
+      case CB0R_BYTE:
+      case CB0R_UTF8:
+      case CB0R_FLOAT:
+        // compare value by given length
+        if(number == item.length && memcmp(bytes, item.start+item.header, number) == 0) return true;
+        break;
+      case CB0R_MAP:
+      case CB0R_ARRAY:
+      case CB0R_TAG:
+        // compare value by parsed byte length
+        if(number == (item.end - (item.start + item.header)) && memcmp(bytes, item.start + item.header, number) == 0) return true;
+        break;
+      default:;
+    }
+  }
+
+  return false;
 }
 
 // defined everywhere but OSX, copied from https://gist.github.com/yinyin/2027912
