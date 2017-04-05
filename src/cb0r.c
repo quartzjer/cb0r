@@ -325,7 +325,7 @@ bool cb0r_find(cb0r_t map, cb0r_e type, uint64_t number, uint8_t *bytes, cb0r_t 
       case CB0R_ARRAY:
       case CB0R_TAG:
         // compare value by parsed byte length
-        if(number == (item.end - (item.start + item.header)) && memcmp(bytes, item.start + item.header, number) == 0) return true;
+        if(number == (uint64_t)(item.end - (item.start + item.header)) && memcmp(bytes, item.start + item.header, number) == 0) return true;
         break;
       default:;
     }
