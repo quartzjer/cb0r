@@ -2,7 +2,7 @@
 all: bin
 
 test.c: test/test.c 
-	gcc -Wall -Isrc -o bin/test test/test.c src/cb0r.c
+	gcc -std=c99 -Wall -Isrc -o bin/test test/test.c src/cb0r.c
 
 test: test.c
 	@if ./bin/test ; then \
@@ -12,7 +12,7 @@ test: test.c
 	fi; \
 
 bin: bin/cb0r.c 
-	gcc -Wall -Isrc -o bin/cb0r bin/cb0r.c  src/cb0r.c
+	gcc -std=c99 -Wall -Isrc -o bin/cb0r bin/cb0r.c  src/cb0r.c
 
 clean:
 	rm -f bin/cb0r bin/test
