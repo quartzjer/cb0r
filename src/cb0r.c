@@ -349,6 +349,8 @@ bool cb0r_find(cb0r_t map, cb0r_e type, uint64_t number, uint8_t *bytes, cb0r_t 
 #define htole64(x) OSSwapHostToLittleInt64(x)
 #define be64toh(x) OSSwapBigToHostInt64(x)
 #define le64toh(x) OSSwapLittleToHostInt64(x)
+#elif
+#include <endian.h>
 #endif /* __APPLE__ */
 
 uint8_t cb0r_write(uint8_t *out, cb0r_e type, uint64_t number)
