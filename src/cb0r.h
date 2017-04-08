@@ -82,10 +82,10 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result);
 // safer high-level wrapper to read raw CBOR
 bool cb0r_read(uint8_t *in, uint32_t len, cb0r_t result);
 
-// fetch a given item from an array (or map), 0 index
+// fetch an item from the given array (or map), zero-index
 bool cb0r_get(cb0r_t array, uint32_t index, cb0r_t result);
 
-// get the value of a given key from a map, number/bytes only used for some types
+// find and fetch the value of a given key from the map, number/bytes args only used for some types
 bool cb0r_find(cb0r_t map, cb0r_e type, uint64_t number, uint8_t *bytes, cb0r_t result);
 
 // convenience method to write a header given a type and optional number (length/count/value), returns bytes written to out (max 9)
