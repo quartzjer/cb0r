@@ -291,9 +291,8 @@ bool cb0r_find(cb0r_t map, cb0r_e type, uint64_t number, uint8_t *bytes, cb0r_t 
   if(map->type != CB0R_MAP) return false;
 
   for(uint32_t i = 0; i < map->length * 2; i += 2) {
-    cb0r_s item = {0,};
-    if(!cb0r_get(map, i, &item)) return false;
-    if(item.type != type) continue;
+    if(!cb0r_get(map, i, result)) return false;
+    if(result->type != type) continue;
     // either number compare or number+bytes compare
     switch(type) {
       case CB0R_INT:
@@ -313,22 +312,27 @@ bool cb0r_find(cb0r_t map, cb0r_e type, uint64_t number, uint8_t *bytes, cb0r_t 
       case CB0R_TRUE:
       case CB0R_NULL:
       case CB0R_UNDEF:
-        if(number == item.value) return true;
-        break;
+        if(number == result->value) break;
+        continue;
       case CB0R_BYTE:
       case CB0R_UTF8:
       case CB0R_FLOAT:
         // compare value by given length
-        if(number == item.length && memcmp(bytes, item.start+item.header, number) == 0) return true;
-        break;
+        if(number == result->length && memcmp(bytes, result->start + result->header, number) == 0) break;
+        continue;
       case CB0R_MAP:
       case CB0R_ARRAY:
       case CB0R_TAG:
         // compare value by parsed byte length
-        if(number == (uint64_t)(item.end - (item.start + item.header)) && memcmp(bytes, item.start + item.header, number) == 0) return true;
-        break;
-      default:;
+        if(number == (uint64_t)(result->end - (result->start + result->header)) && memcmp(bytes, result->start + result->header, number) == 0) break;
+        continue;
+      default:
+        continue;
     }
+
+    // key matched
+    if(!cb0r_get(map, i+1, result)) return false;
+    return true;
   }
 
   return false;
