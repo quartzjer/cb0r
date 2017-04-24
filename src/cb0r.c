@@ -57,9 +57,12 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     [0xff] = &&l_break
   };
 
-  if(start >= stop) return stop;
-
   uint8_t *end = start + 1;
+  if(end > stop) {
+    if(result) result->type = CB0R_ERR;
+    return stop;
+  }
+
   cb0r_e type = CB0R_ERR;
   uint8_t size = 0;
   uint32_t count = 0;
