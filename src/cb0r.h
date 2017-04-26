@@ -91,6 +91,10 @@ bool cb0r_find(cb0r_t map, cb0r_e type, uint64_t number, uint8_t *bytes, cb0r_t 
 // convenience method to write a header given a type and optional number (length/count/value), returns bytes written to out (max 9)
 uint8_t cb0r_write(uint8_t *out, cb0r_e type, uint64_t number);
 
+// simple wrapper to return a contained value start/length
+uint8_t *cb0r_value(cb0r_t data);
+uint32_t cb0r_vlen(cb0r_t data);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

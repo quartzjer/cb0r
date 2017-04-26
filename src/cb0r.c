@@ -341,6 +341,19 @@ bool cb0r_find(cb0r_t map, cb0r_e type, uint64_t number, uint8_t *bytes, cb0r_t 
   return false;
 }
 
+// simple wrappers to return start and length
+uint8_t *cb0r_value(cb0r_t data)
+{
+  if(!data) return NULL;
+  return data->start + data->header;
+}
+
+uint32_t cb0r_vlen(cb0r_t data)
+{
+  if(!data) return 0;
+  return data->end - cb0r_value(data);
+}
+
 // defined everywhere but OSX, copied from https://gist.github.com/yinyin/2027912
 #ifdef __APPLE__
 #include <libkern/OSByteOrder.h>
