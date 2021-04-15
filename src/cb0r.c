@@ -168,6 +168,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
     type = (start[0] >> 5);
 
   // done done, extract value if result requested
+  uint8_t headerSz = size + 1;
   if(!skip)
   {
     if(!result) return end;
@@ -217,7 +218,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
       case CB0R_BYTE:
       case CB0R_UTF8: {
         if(count == CB0R_STREAM) result->count = count;
-        else result->length = end - (start + 1);
+        else result->length = end - (start + headerSz);
       } break;
 
       case CB0R_ARRAY:
@@ -256,7 +257,7 @@ uint8_t *cb0r(uint8_t *start, uint8_t *stop, uint32_t skip, cb0r_t result)
         if(result->type < CB0R_ERR) result->type = CB0R_ERR;
       }
     }
-    result->header = size + 1;
+    result->header = headerSz;
     return end;
   }
 
