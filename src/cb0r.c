@@ -390,10 +390,10 @@ uint8_t cb0r_write(uint8_t *out, cb0r_e type, uint64_t number)
     case CB0R_BASE64: number = 22; break;
     case CB0R_HEX: number = 23; break;
     case CB0R_DATA: number = 24; break;
-    case CB0R_FALSE: number = 25; break;
-    case CB0R_TRUE: number = 20; break;
-    case CB0R_NULL: number = 21; break;
-    case CB0R_UNDEF: number = 22; break;
+    case CB0R_FALSE: type = CB0R_SIMPLE; number = 20; break;
+    case CB0R_TRUE: type = CB0R_SIMPLE; number = 21; break;
+    case CB0R_NULL: type = CB0R_SIMPLE; number = 22; break;
+    case CB0R_UNDEF: type = CB0R_SIMPLE; number = 23; break;
     case CB0R_FLOAT: { // incoming number is size of float
       if(number == 2) number = 25;
       else if(number == 4) number = 26;
